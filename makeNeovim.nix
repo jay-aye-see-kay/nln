@@ -76,7 +76,7 @@ let
   #
   cfg = pkgs.neovimUtils.makeNeovimConfig {
     inherit extraPython3Packages withNodeJs withPython3;
-    plugins = plugins ++ [ pkgs.vimPlugins.lazy-nvim ];
+    plugins = [ pkgs.vimPlugins.lazy-nvim ];
     customRC = /* vim */ ''
       lua << EOF
         -- Ignore the user lua configuration
