@@ -1,1 +1,1 @@
-print("hi from lua/_cfg/treesitter.lua")
+-- print("hi from lua/_cfg/treesitter.lua")
