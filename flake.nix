@@ -21,6 +21,9 @@
           plugins = with pkgs.vimPlugins; [
             vim-fugitive
             zoxide-vim
+
+            # this isn't working as expected, lazy loads the plugin later on, but the grammars don't get loaded in
+            (nvim-treesitter.withPlugins (_: nvim-treesitter.allGrammars))
           ];
           extraPackages = with pkgs; [
             nil # nix lsp
@@ -32,7 +35,7 @@
       rec {
         packages.nvim = mainNeovim;
         defaultPackage = packages.nvim;
-        apps.nvim = { type = "app"; program = "${defaultPackage}/bin/nvim"; };
+        apps.nvim = { type = "app"; program = "${defaultPackage}/bin/test-nvim"; };
         apps.default = apps.nvim;
         overlays.default = final: prev: { neovim = defaultPackage; };
       }
