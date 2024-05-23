@@ -1,3 +1,8 @@
+# source: https://github.com/BirdeeHub/nixCats-nvim/blob/cd836e5/nix/utils/default.nix#L164-L203
+#
+# Copyright (c) 2023 BirdeeHub
+# Licensed under the MIT license
+
 { pkgs, ... }: with builtins; rec {
   luaTablePrinter = attrSet:
     let

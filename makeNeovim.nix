@@ -9,7 +9,7 @@
 , nvimAppName ? ""
 }:
 let
-  utils = import ./utils.nix { inherit pkgs; };
+  inherit (import ./fromNixCats.nix { inherit pkgs; }) luaTablePrinter;
 
   #
   # user config as a plugin
@@ -42,9 +42,9 @@ let
     -- DO NOT EDIT: this file was generated and will be overwritted
     local M = {}
     -- keep private so can't be modified, map pnames to store path
-    pluginDirs = ${utils.luaTablePrinter pluginDirs}
+    pluginDirs = ${luaTablePrinter pluginDirs}
     -- mutable list of plugins to collect config
-    M.plugins = ${utils.luaTablePrinter pluginsForConfig}
+    M.plugins = ${luaTablePrinter pluginsForConfig}
     -- method to call after configuring to convert to list for lazy.nvim
     function M.plugins:for_lazy()
       local result = {}
