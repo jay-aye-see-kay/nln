@@ -7,4 +7,14 @@ plugins["vim-fugitive"] = {
 	cmd = "G",
 }
 
-require("lazy").setup(plugins:for_lazy())
+require("lazy").setup(plugins:for_lazy(), {
+	performance = {
+		rtp = {
+			disabled_plugins = {
+				"netrwPlugin",
+				"tohtml",
+				"tutor",
+			},
+		},
+	},
+})
