@@ -18,7 +18,7 @@
         utils = import ./utils.nix { inherit pkgs; };
 
         makeNeovim =
-          { extraPkgsPath ? ""
+          { extraPackages ? [ ]
           , extraPython3Packages ? (p: [ ])
           , plugins ? [ ]
           , withPython3 ? true
@@ -90,7 +90,7 @@
             # cfg for wrapNeovimUnstable
             #
             cfg = pkgs.neovimUtils.makeNeovimConfig {
-              inherit extraPkgsPath extraPython3Packages withNodeJs withPython3;
+              inherit extraPython3Packages withNodeJs withPython3;
               plugins = plugins ++ [ pkgs.vimPlugins.lazy-nvim ];
               customRC = /* vim */ ''
                 lua << EOF
@@ -113,7 +113,8 @@
             # modify cfg before it gets to wrapNeovimUnstable
             #
             extraCfg = {
-              wrapperArgs = cfg.wrapperArgs ++ [ "--suffix" "PATH" ":" extraPkgsPath ];
+              wrapperArgs = cfg.wrapperArgs ++
+                [ "--suffix" "PATH" ":" (pkgs.lib.makeBinPath extraPackages) ];
             };
           in
           pkgs.wrapNeovimUnstable pkgs.neovim-unwrapped (cfg // extraCfg);
@@ -123,10 +124,10 @@
             vim-fugitive
             zoxide-vim
           ];
-          extraPkgsPath = pkgs.lib.makeBinPath (with pkgs; [
+          extraPackages = with pkgs; [
             nil # nix lsp
             sumneko-lua-language-server
-          ]);
+          ];
         };
 
       in
