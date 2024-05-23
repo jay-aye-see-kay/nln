@@ -17,29 +17,6 @@
 
         utils = (import ./utils.nix) { inherit pkgs; };
 
-        customConfig = pkgs.neovimUtils.makeNeovimConfig {
-          withPython3 = true;
-          extraPython3Packages = p: [ p.debugpy ];
-          withNodeJs = true;
-          customRC = ''
-            lua << EOF
-              vim.opt.rtp:prepend("${./config}")
-              vim.opt.packpath = vim.opt.rtp:get()
-              require("_cfg")
-            EOF
-          '';
-          plugins = with pkgs.vimPlugins; [
-            vim-fugitive
-          ];
-        };
-
-        # Extra packages made available to nvim but not the system
-        # system packages take precedence over these
-        extraPkgsPath = pkgs.lib.makeBinPath (with pkgs; [
-          nil # nix lsp
-          sumneko-lua-language-server
-        ]);
-
         # depsTable = fpkgs.writeText "included.lua" ''return ${(import ../utils).luaTablePrinter allPluginDeps}'';
 
         makeNeovim =
@@ -52,27 +29,45 @@
             # some way to pass in lua files in here too (or just default to this dir)
           }:
           let
+            luaPath = "${./.}";
+            LuaConfig = pkgs.stdenv.mkDerivation {
+              name = "nixCats-special-rtp-entry-LuaConfig";
+              builder = pkgs.writeText "builder.sh" /* bash */ ''
+                source $stdenv/setup
+                mkdir -p $out
+                cp -r ${luaPath}/* $out/
+              '';
+            };
+
             cfg = pkgs.neovimUtils.makeNeovimConfig {
               inherit
                 extraPkgsPath extraPython3Packages plugins withNodeJs withPython3;
-              customRC = ''
+              customRC = /* vim */ ''
                 lua << EOF
-                  vim.opt.rtp:prepend("${./config}")
-                  vim.opt.packpath = vim.opt.rtp:get()
-                  require("_cfg")
-                  vim.g.from_nixpkgs = ${utils.luaListPrinter plugins}
+                  vim.opt.rtp:prepend("${LuaConfig}")
                 EOF
+
+                let configdir = "${LuaConfig}"
+                if filereadable(configdir . "/init.lua")
+                  execute "source " . configdir . "/init.lua"
+                elseif filereadable(configdir . "/init.vim")
+                  execute "source " . configdir . "/init.vim"
+                endif
               '';
             };
           in
           pkgs.wrapNeovimUnstable pkgs.neovim-unwrapped (cfg // {
-            wrapperArgs = customConfig.wrapperArgs ++ [ "--suffix" "PATH" ":" extraPkgsPath ];
+            wrapperArgs = cfg.wrapperArgs ++ [ "--suffix" "PATH" ":" extraPkgsPath ];
           });
 
         mainNeovim = makeNeovim {
           plugins = with pkgs.vimPlugins; [
             vim-fugitive
           ];
+          extraPkgsPath = pkgs.lib.makeBinPath (with pkgs; [
+            # nil # nix lsp
+            # sumneko-lua-language-server
+          ]);
         };
 
       in
