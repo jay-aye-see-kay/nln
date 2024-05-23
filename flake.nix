@@ -23,7 +23,8 @@
           , plugins ? [ ]
           , withPython3 ? true
           , withNodeJs ? true
-            # TODO add appname (for cfg dir) here
+          , luaPath ? "${./.}"
+          , nvimAppName ? ""
           }:
           let
             #
@@ -34,7 +35,7 @@
               builder = pkgs.writeText "builder.sh" /* bash */ ''
                 source $stdenv/setup
                 mkdir -p $out
-                cp -r ${./.}/* $out/
+                cp -r ${luaPath}/* $out/
               '';
             };
 
@@ -116,10 +117,32 @@
               wrapperArgs = cfg.wrapperArgs ++
                 [ "--suffix" "PATH" ":" (pkgs.lib.makeBinPath extraPackages) ];
             };
+
+            #
+            # finally a derivation we can build
+            #
+            nvimPkg = pkgs.wrapNeovimUnstable pkgs.neovim-unwrapped (cfg // extraCfg);
           in
-          pkgs.wrapNeovimUnstable pkgs.neovim-unwrapped (cfg // extraCfg);
+          if nvimAppName == "" then
+            nvimPkg
+          else
+          # wrap and rename binary if given custom name
+          # see: https://wiki.nixos.org/wiki/Nix_Cookbook#Wrapping_packages
+            pkgs.runCommand "nvim-renamed-to-${nvimAppName}"
+              { buildInputs = [ pkgs.makeWrapper ]; }
+              ''
+                # Link every top-level folder from nvimPkg to our new target (except /bin)
+                mkdir $out
+                ln -s ${nvimPkg}/* $out
+                rm $out/bin
+                # bin should just contain our wrapped + renamed binary
+                mkdir $out/bin
+                makeWrapper ${nvimPkg}/bin/nvim $out/bin/${nvimAppName} \
+                  --set NVIM_APPNAME ${nvimAppName}
+              '';
 
         mainNeovim = makeNeovim {
+          nvimAppName = "test-nvim";
           plugins = with pkgs.vimPlugins; [
             vim-fugitive
             zoxide-vim
