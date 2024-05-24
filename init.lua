@@ -1,4 +1,6 @@
-require("_cfg.treesitter")
+require("cfg.colors")
+
+require("cfg.treesitter")
 
 local plugins = require("nln").plugins
 

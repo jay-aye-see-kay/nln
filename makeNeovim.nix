@@ -2,7 +2,8 @@
 
 { extraPackages ? [ ]
 , extraPython3Packages ? (p: [ ])
-, plugins ? [ ]
+, startPlugins ? [ ]
+, lazyPlugins ? [ ]
 , withPython3 ? true
 , withNodeJs ? true
 , luaPath ? "${./.}"
@@ -29,11 +30,11 @@ let
   pluginsForConfig = builtins.foldl'
     (acc: elem: { "${elem.pname}" = { }; } // acc)
     { }
-    plugins;
+    lazyPlugins;
   pluginDirs = builtins.foldl'
     (acc: elem: { "${elem.pname}" = "${elem}"; } // acc)
     { }
-    plugins;
+    lazyPlugins;
 
   #
   # this file is how we pass build info (like paths) to lua config
@@ -76,7 +77,7 @@ let
   #
   cfg = pkgs.neovimUtils.makeNeovimConfig {
     inherit extraPython3Packages withNodeJs withPython3;
-    plugins = [ pkgs.vimPlugins.lazy-nvim ];
+    plugins = [ pkgs.vimPlugins.lazy-nvim ] ++ startPlugins;
     customRC = /* vim */ ''
       lua << EOF
         -- Ignore the user lua configuration

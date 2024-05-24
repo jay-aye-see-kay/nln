@@ -6,7 +6,7 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
+  outputs = { nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -18,13 +18,18 @@
 
         mainNeovim = makeNeovim {
           nvimAppName = "test-nvim";
-          plugins = with pkgs.vimPlugins; [
+
+          startPlugins = with pkgs.vimPlugins; [
+            catppuccin-nvim
+          ];
+
+          lazyPlugins = with pkgs.vimPlugins; [
             vim-fugitive
             zoxide-vim
-
             # this isn't working as expected, lazy loads the plugin later on, but the grammars don't get loaded in
             (nvim-treesitter.withPlugins (_: nvim-treesitter.allGrammars))
           ];
+
           extraPackages = with pkgs; [
             nil # nix lsp
             sumneko-lua-language-server
