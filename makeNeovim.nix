@@ -95,32 +95,10 @@ let
   };
 
   #
-  # modify cfg before it gets to wrapNeovimUnstable
+  # wrapper args to pass to the final makeWrapper
   #
-  extraCfg = {
-    wrapperArgs = cfg.wrapperArgs ++
-      [ "--suffix" "PATH" ":" (pkgs.lib.makeBinPath extraPackages) ];
-  };
-
-  #
-  # finally a derivation we can build
-  #
-  nvimPkg = pkgs.wrapNeovimUnstable pkgs.neovim-unwrapped (cfg // extraCfg);
+  extraWrapperArgs = cfg.wrapperArgs
+    ++ [ "--suffix" "PATH" ":" (pkgs.lib.makeBinPath extraPackages) ]
+    ++ (if nvimAppName == "" then [ ] else [ "--set" "NVIM_APPNAME" nvimAppName ]);
 in
-if nvimAppName == "" then
-  nvimPkg
-else
-# wrap and rename binary if given custom name
-# see: https://wiki.nixos.org/wiki/Nix_Cookbook#Wrapping_packages
-  pkgs.runCommand "nvim-renamed-to-${nvimAppName}"
-  { buildInputs = [ pkgs.makeWrapper ]; }
-    ''
-      # Link every top-level folder from nvimPkg to our new target (except /bin)
-      mkdir $out
-      ln -s ${nvimPkg}/* $out
-      rm $out/bin
-      # bin should just contain our wrapped + renamed binary
-      mkdir $out/bin
-      makeWrapper ${nvimPkg}/bin/nvim $out/bin/${nvimAppName} \
-        --set NVIM_APPNAME ${nvimAppName}
-    ''
+pkgs.wrapNeovimUnstable pkgs.neovim-unwrapped (cfg // { wrapperArgs = extraWrapperArgs; })

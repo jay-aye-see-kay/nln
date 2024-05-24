@@ -35,7 +35,7 @@
       rec {
         packages.nvim = mainNeovim;
         defaultPackage = packages.nvim;
-        apps.nvim = { type = "app"; program = "${defaultPackage}/bin/test-nvim"; };
+        apps.nvim = { type = "app"; program = "${defaultPackage}/bin/nvim"; };
         apps.default = apps.nvim;
         overlays.default = final: prev: { neovim = defaultPackage; };
       }
