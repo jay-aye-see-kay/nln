@@ -1,13 +1,8 @@
-require("cfg.colors")
-
-require("cfg.treesitter")
-
 local plugins = require("nln").plugins
 
-plugins["vim-fugitive"] = {
-	lazy = true,
-	cmd = "G",
-}
+require("cfg.colors")
+require("cfg.mini")
+require("cfg.treesitter")
 
 require("lazy").setup(plugins:for_lazy(), {
 	performance = {
