@@ -1,3 +1,4 @@
+local plugins = require("nln").plugins
 local h = require("cfg.helpers")
 
 -- extend color scheme
@@ -12,31 +13,34 @@ h.autocmd({ "ColorScheme" }, {
 	end,
 })
 
-vim.api.nvim_set_var("vim_json_syntax_conceal", 0)
-
-vim.o.background = "dark"
-
--- loaded before lazy.nvim
-require("catppuccin").setup({
-	term_colors = true,
-	integrations = {
-		cmp = true,
-		gitsigns = true,
-		markdown = true,
-		mini = true,
-		neotree = true,
-		noice = true,
-		notify = true,
-		semantic_tokens = true,
-		telescope = true,
-		which_key = true,
-		-- For more integrations https://github.com/catppuccin/nvim#integrations
-	},
-	custom_highlights = function(colors)
-		return {
-			CodeBlockBackground = { bg = colors.surface0 },
-			ActiveTerm = { bg = colors.crust },
-		}
+plugins["catppuccin-nvim"] = {
+	lazy = false,
+	priority = 1000,
+	config = function()
+		vim.api.nvim_set_var("vim_json_syntax_conceal", 0)
+		vim.o.background = "dark"
+		require("catppuccin").setup({
+			term_colors = true,
+			integrations = {
+				cmp = true,
+				gitsigns = true,
+				markdown = true,
+				mini = true,
+				neotree = true,
+				noice = true,
+				notify = true,
+				semantic_tokens = true,
+				telescope = true,
+				which_key = true,
+				-- For more integrations https://github.com/catppuccin/nvim#integrations
+			},
+			custom_highlights = function(colors)
+				return {
+					CodeBlockBackground = { bg = colors.surface0 },
+					ActiveTerm = { bg = colors.crust },
+				}
+			end,
+		})
+		vim.cmd.colorscheme("catppuccin-macchiato") -- latte, frappe, macchiato, mocha
 	end,
-})
-vim.cmd.colorscheme("catppuccin-macchiato") -- latte, frappe, macchiato, mocha
+}
